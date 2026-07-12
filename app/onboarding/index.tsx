@@ -6,6 +6,7 @@ import Step1BasicInfo from '@/components/onboarding/Step1BasicInfo'
 import Step2BodyStats from '@/components/onboarding/Step2BodyStats'
 import Step3Goal from '@/components/onboarding/Step3Goal'
 import Step4Activity from '@/components/onboarding/Step4Activity'
+import Step5Results from '@/components/onboarding/Step5Results'
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState<number>(1)
@@ -63,8 +64,22 @@ export default function OnboardingScreen() {
         <Step4Activity
           activityLevel={activityLevel}
           setActivityLevel={setActivityLevel}
-          onNext={() => console.log('Onboarding completed!')}
+          onNext={() => setStep(5)}
           onBack={() => setStep(3)}
+        />
+      )}
+      {step === 5 && sex && (
+        <Step5Results
+          name={name}
+          age={age}
+          sex={sex}
+          height={height}
+          weight={weight}
+          heightUnit={heightUnit}
+          weightUnit={weightUnit}
+          goal={goal}
+          activityLevel={activityLevel}
+          onBack={() => setStep(4)}
         />
       )}
     </ScrollView>   
