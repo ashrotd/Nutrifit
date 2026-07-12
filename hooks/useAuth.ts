@@ -3,13 +3,18 @@ import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/useAppStore'
 import { UserProfile } from '@/types'
 
+// module-level flag — subscription only runs once across all useAuth() calls
+let subscribed = false
+
 export function useAuth() {
   const { user, isLoading, setUser, setLoading, setOnboarded, reset } =
     useAppStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('getSession:', session?.user?.email, error)
+    if (subscribed) return
+    subscribed = true
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchProfile(session.user.id)
       } else {
@@ -28,39 +33,40 @@ export function useAuth() {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      subscribed = false
+    }
   }, [])
 
   async function fetchProfile(userId: string) {
     try {
-      console.log('fetchProfile for:', userId)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
-      console.log('profile data:', data, 'error:', error)
-
       if (error) throw error
 
       const profile = snakeToCamel(data) as UserProfile
       setUser(profile)
       setOnboarded(data.onboarding_completed ?? false)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching profile:', error)
+      if (error?.message?.includes('JWT')) {
+        await supabase.auth.signOut()
+      }
     } finally {
       setLoading(false)
     }
   }
 
   async function signIn(email: string, password: string) {
-    console.log('signIn attempt:', email)
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-    console.log('signIn result:', data?.user?.email, error)
     if (error) throw error
     return data
   }

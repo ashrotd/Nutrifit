@@ -1,68 +1,73 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import { router } from 'expo-router'
-import { colors, fontSize, spacing, radius } from '@/constants/theme'
-import { supabase } from '@/lib/supabase'
-import { useAppStore } from '@/stores/useAppStore'
+import { ScrollView } from 'react-native'
+import { useState } from 'react'
+import { colors } from '@/constants/theme'
+import { Sex, Goal, ActivityLevel } from '@/types'
+import Step1BasicInfo from '@/components/onboarding/Step1BasicInfo'
+import Step2BodyStats from '@/components/onboarding/Step2BodyStats'
+import Step3Goal from '@/components/onboarding/Step3Goal'
+import Step4Activity from '@/components/onboarding/Step4Activity'
 
 export default function OnboardingScreen() {
-  const { user, setOnboarded } = useAppStore()
+  const [step, setStep] = useState<number>(1)
 
-  async function handleSkip() {
-    // Mark onboarding complete
-    await supabase
-      .from('profiles')
-      .update({ onboarding_completed: true })
-      .eq('id', user?.id)
+  // Step 1 state
+  const [name, setName] = useState<string>('')
+  const [age, setAge] = useState<string>('')
+  const [sex, setSex] = useState<Sex | null>(null)
+  const [height, setHeight] = useState<string>('')
+  const [weight, setWeight] = useState<string>('')
+  const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm')
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg')
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel | null>(null)
 
-    setOnboarded(true)
-    router.replace('/(tabs)')
-  }
+  // Step 3 state
+  const [goal, setGoal] = useState<Goal | null>(null)
 
+  
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: colors.bg,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: spacing.lg,
-    }}>
-      <Text style={{ fontSize: 64 }}>💪</Text>
-      <Text style={{
-        fontSize: fontSize.xxxl,
-        fontWeight: '800',
-        color: colors.textPrimary,
-        marginTop: spacing.lg,
-        textAlign: 'center',
-      }}>
-        Let's set up your profile
-      </Text>
-      <Text style={{
-        fontSize: fontSize.md,
-        color: colors.textSecondary,
-        marginTop: spacing.sm,
-        textAlign: 'center',
-      }}>
-        We'll calculate your personalized calorie and macro targets
-      </Text>
-
-      <TouchableOpacity
-        onPress={handleSkip}
-        style={{
-          backgroundColor: colors.primary,
-          borderRadius: radius.md,
-          padding: spacing.md,
-          paddingHorizontal: spacing.xl,
-          marginTop: spacing.xxl,
-        }}
-      >
-        <Text style={{
-          color: '#fff',
-          fontSize: fontSize.md,
-          fontWeight: '700',
-        }}>
-          Get Started →
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ flexGrow: 1 }}>
+      {step === 1 && (
+        <Step1BasicInfo
+          name={name}
+          setName={setName}
+          age={age}
+          setAge={setAge}
+          sex={sex}
+          setSex={setSex}
+          onNext={() => setStep(2)}
+        />
+      )}
+      {step === 2 && (
+        <Step2BodyStats
+          height={height}
+          setHeight={setHeight}
+          weight={weight}
+          setWeight={setWeight}
+          heightUnit={heightUnit}
+          setHeightUnit={setHeightUnit}
+          weightUnit={weightUnit}
+          setWeightUnit={setWeightUnit}
+          onNext={() => setStep(3)}
+          onBack={() => setStep(1)}
+        />
+      )}
+      {step === 3 && (
+        <Step3Goal
+          goal={goal}
+          setGoal={setGoal}
+          onNext={() => setStep(4)}
+          onBack={() => setStep(2)}
+        />
+      )}
+      {step === 4 && (
+        <Step4Activity
+          activityLevel={activityLevel}
+          setActivityLevel={setActivityLevel}
+          onNext={() => console.log('Onboarding completed!')}
+          onBack={() => setStep(3)}
+        />
+      )}
+    </ScrollView>   
   )
+
 }

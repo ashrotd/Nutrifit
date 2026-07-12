@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Stack, router } from 'expo-router'
+import { Stack, router, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -20,18 +20,23 @@ const queryClient = new QueryClient({
 function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth()
   const { isOnboarded } = useAppStore()
+  const segments = useSegments()
 
   useEffect(() => {
     if (isLoading) return
 
-    if (!isAuthenticated) {
+    const inAuth = segments[0] === '(auth)'
+    const inOnboarding = segments[0] === 'onboarding'
+    const inTabs = segments[0] === '(tabs)'
+
+    if (!isAuthenticated && !inAuth) {
       router.replace('/(auth)/login')
-    } else if (!isOnboarded) {
-      router.replace('/onboarding/index')
-    } else {
+    } else if (isAuthenticated && !isOnboarded && !inOnboarding) {
+      router.replace('/onboarding')
+    } else if (isAuthenticated && isOnboarded && !inTabs) {
       router.replace('/(tabs)')
     }
-  }, [isAuthenticated, isLoading, isOnboarded])
+  }, [isAuthenticated, isLoading, isOnboarded, segments])
 
   if (isLoading) {
     return (
