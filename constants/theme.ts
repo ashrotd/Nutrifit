@@ -1,35 +1,30 @@
 export const colors = {
-  primary: '#6366f1',       // indigo
-  primaryLight: '#818cf8',
-  primaryDark: '#4f46e5',
+  // Brand — Volt Lime
+  primary: '#BFD32B',
+  primaryDark: '#9aab22',
+  primaryLight: 'rgba(191,211,43,0.12)',
 
-  secondary: '#22d3ee',     // cyan
-  secondaryLight: '#67e8f9',
+  // Semantic
+  danger: '#f87171',
+  success: '#4ade80',
 
-  success: '#22c55e',       // green
-  warning: '#f59e0b',       // amber
-  danger: '#ef4444',        // red
-  info: '#3b82f6',          // blue
+  // Macro colors (from design)
+  protein: '#BFD32B',
+  carbs: '#7a9c3f',
+  fat: '#e0e58a',
 
-  // Macro colors
-  protein: '#6366f1',       // indigo
-  carbs: '#f59e0b',         // amber
-  fat: '#ef4444',           // red
-  calories: '#22d3ee',      // cyan
-
-  // Dark theme backgrounds
-  bg: '#0f0f0f',
-  bgCard: '#1a1a2e',
-  bgInput: '#16213e',
+  // Dark theme
+  bg: '#0a0a0a',
+  bgCard: '#141414',
+  bgInput: '#1c1c1e',
 
   // Text
-  textPrimary: '#f9fafb',
-  textSecondary: '#9ca3af',
-  textMuted: '#6b7280',
+  textPrimary: '#ffffff',
+  textSecondary: '#a1a1aa',
+  textMuted: '#52525b',
 
   // Border
-  border: '#1f2937',
-  borderLight: '#374151',
+  border: '#27272a',
 }
 
 export const spacing = {
@@ -42,7 +37,7 @@ export const spacing = {
 }
 
 export const radius = {
-  sm: 8,
+  sm: 6,
   md: 12,
   lg: 16,
   xl: 24,
@@ -50,13 +45,13 @@ export const radius = {
 }
 
 export const fontSize = {
-  xs: 11,
-  sm: 13,
-  md: 15,
-  lg: 17,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  xs: 13,
+  sm: 15,
+  md: 17,
+  lg: 19,
+  xl: 22,
+  xxl: 28,
+  xxxl: 36,
 }
 
 export const fontWeight = {

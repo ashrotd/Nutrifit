@@ -1,242 +1,180 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { format } from 'date-fns'
+import Svg, { Circle, Text as SvgText } from 'react-native-svg'
 import { useAppStore } from '@/stores/useAppStore'
 import { colors, spacing, fontSize, radius } from '@/constants/theme'
-import { useAuth } from '@/hooks/useAuth'
+import LogFoodSheet from '@/components/nutrition/LogFoodSheet'
+
+const RADIUS = 54
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+
+function CalorieRing({ eaten, target }: { eaten: number; target: number }) {
+  const progress = Math.min((eaten / target) * CIRCUMFERENCE, CIRCUMFERENCE)
+  return (
+    <Svg width={132} height={132} viewBox="0 0 132 132">
+      <Circle cx="66" cy="66" r={RADIUS} fill="none" stroke="#27272a" strokeWidth="10" />
+      <Circle
+        cx="66" cy="66" r={RADIUS}
+        fill="none"
+        stroke={colors.primary}
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeDasharray={`${progress} ${CIRCUMFERENCE}`}
+        transform="rotate(-90 66 66)"
+      />
+      <SvgText x="66" y="60" textAnchor="middle" fill="#fff" fontSize="24" fontWeight="800">
+        {eaten.toLocaleString()}
+      </SvgText>
+      <SvgText x="66" y="80" textAnchor="middle" fill="#a1a1aa" fontSize="13">
+        of {target.toLocaleString()}
+      </SvgText>
+    </Svg>
+  )
+}
+
+function MacroBar({ label, eaten, target, color }: { label: string; eaten: number; target: number; color: string }) {
+  const pct = Math.min((eaten / target) * 100, 100)
+  return (
+    <View style={{ gap: 5 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>{label}</Text>
+        <Text style={{ color: '#fff', fontSize: fontSize.sm, fontWeight: '700' }}>
+          {eaten}<Text style={{ color: colors.textSecondary, fontWeight: '400' }}>/{target}g</Text>
+        </Text>
+      </View>
+      <View style={{ height: 6, backgroundColor: '#27272a', borderRadius: 99 }}>
+        <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: 99 }} />
+      </View>
+    </View>
+  )
+}
 
 export default function DashboardScreen() {
   const { user } = useAppStore()
-  const { signOut } = useAuth()
+  const insets = useSafeAreaInsets()
+  const [logSheetVisible, setLogSheetVisible] = useState(false)
 
   const greeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 17) return 'Good afternoon'
+    const h = new Date().getHours()
+    if (h < 12) return 'Good morning'
+    if (h < 17) return 'Good afternoon'
     return 'Good evening'
   }
 
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+  const dateStr = format(new Date(), 'yyyy-MM-dd')
+
+  const initials = user?.name
+    ?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
+
+  const target = user?.targetCalories ?? 2200
+  const eaten = 0
+
+  const quickActions = [
+    { label: 'Log Food', emoji: '🍽️', primary: true, onPress: () => setLogSheetVisible(true) },
+    { label: 'Add Workout', emoji: '🏋️', primary: false, onPress: () => {} },
+    { label: 'Log Weight', emoji: '⚖️', primary: false, onPress: () => {} },
+    { label: 'AI Coach', emoji: '🤖', primary: false, onPress: () => {} },
+  ]
+
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{ padding: spacing.lg }}
-    >
-      {/* Header */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: spacing.xl,
-        marginBottom: spacing.xl,
-      }}>
-        <View>
-          <Text style={{
-            fontSize: fontSize.sm,
-            color: colors.textSecondary,
-            fontWeight: '500',
-          }}>
-            {greeting()} 👋
-          </Text>
-          <Text style={{
-            fontSize: fontSize.xxl,
-            color: colors.textPrimary,
-            fontWeight: '800',
-            marginTop: 2,
-          }}>
-            {user?.name ?? 'Athlete'}
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={signOut}
-          style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: radius.full,
-            width: 44,
-            height: 44,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Text style={{ fontSize: 20 }}>⚙️</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Calories Card */}
-      <View style={{
-        backgroundColor: colors.bgCard,
-        borderRadius: radius.xl,
-        padding: spacing.lg,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-      }}>
-        <Text style={{
-          fontSize: fontSize.sm,
-          color: colors.textSecondary,
-          fontWeight: '600',
-          marginBottom: spacing.sm,
-        }}>
-          TODAY'S CALORIES
-        </Text>
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'baseline',
-          gap: 6,
-        }}>
-          <Text style={{
-            fontSize: 48,
-            fontWeight: '800',
-            color: colors.textPrimary,
-          }}>
-            0
-          </Text>
-          <Text style={{
-            fontSize: fontSize.md,
-            color: colors.textSecondary,
-          }}>
-            / {user?.targetCalories ?? 2000} kcal
-          </Text>
-        </View>
-
-        {/* Progress bar */}
-        <View style={{
-          height: 8,
-          backgroundColor: colors.bgInput,
-          borderRadius: radius.full,
-          marginTop: spacing.md,
-        }}>
-          <View style={{
-            height: 8,
-            width: '0%',
-            backgroundColor: colors.primary,
-            borderRadius: radius.full,
-          }} />
-        </View>
-
-        {/* Macros row */}
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: spacing.md,
-        }}>
-          {[
-            { label: 'Protein', value: '0g', target: `${user?.targetProtein ?? 150}g`, color: colors.protein },
-            { label: 'Carbs', value: '0g', target: `${user?.targetCarbs ?? 200}g`, color: colors.carbs },
-            { label: 'Fat', value: '0g', target: `${user?.targetFat ?? 65}g`, color: colors.fat },
-          ].map((macro) => (
-            <View key={macro.label} style={{ alignItems: 'center' }}>
-              <Text style={{
-                fontSize: fontSize.lg,
-                fontWeight: '700',
-                color: macro.color,
-              }}>
-                {macro.value}
-              </Text>
-              <Text style={{
-                fontSize: fontSize.xs,
-                color: colors.textMuted,
-                marginTop: 2,
-              }}>
-                {macro.label}
-              </Text>
-              <Text style={{
-                fontSize: fontSize.xs,
-                color: colors.textSecondary,
-              }}>
-                of {macro.target}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Quick Actions */}
-      <Text style={{
-        fontSize: fontSize.lg,
-        fontWeight: '700',
-        color: colors.textPrimary,
-        marginBottom: spacing.md,
-      }}>
-        Quick Actions
-      </Text>
-      <View style={{
-        flexDirection: 'row',
-        gap: spacing.md,
-        marginBottom: spacing.md,
-      }}>
-        {[
-          { emoji: '🎙️', label: 'Log Food\nby Voice', color: '#6366f1' },
-          { emoji: '🏋️', label: 'Start\nWorkout', color: '#22d3ee' },
-          { emoji: '⚖️', label: 'Log\nWeight', color: '#22c55e' },
-          { emoji: '🤖', label: 'AI\nCoach', color: '#f59e0b' },
-        ].map((action) => (
-          <TouchableOpacity
-            key={action.label}
-            style={{
-              flex: 1,
-              backgroundColor: colors.bgCard,
-              borderRadius: radius.lg,
-              padding: spacing.md,
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: colors.border,
-              gap: spacing.xs,
-            }}
-          >
-            <Text style={{ fontSize: 28 }}>{action.emoji}</Text>
-            <Text style={{
-              fontSize: fontSize.xs,
-              color: colors.textSecondary,
-              textAlign: 'center',
-              fontWeight: '600',
-            }}>
-              {action.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Stats Row */}
-      <View style={{
-        flexDirection: 'row',
-        gap: spacing.md,
-        marginBottom: spacing.md,
-      }}>
-        {[
-          { label: 'Streak', value: '0 days', emoji: '🔥' },
-          { label: 'This Week', value: '0 workouts', emoji: '💪' },
-          { label: 'Water', value: '0 / 2.5L', emoji: '💧' },
-        ].map((stat) => (
-          <View
-            key={stat.label}
-            style={{
-              flex: 1,
-              backgroundColor: colors.bgCard,
-              borderRadius: radius.lg,
-              padding: spacing.md,
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text style={{ fontSize: 24, marginBottom: 4 }}>{stat.emoji}</Text>
-            <Text style={{
-              fontSize: fontSize.sm,
-              fontWeight: '700',
-              color: colors.textPrimary,
-            }}>
-              {stat.value}
-            </Text>
-            <Text style={{
-              fontSize: fontSize.xs,
-              color: colors.textMuted,
-              marginTop: 2,
-            }}>
-              {stat.label}
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.md,
+          paddingTop: insets.top + spacing.md,
+          paddingBottom: 32,
+        }}
+      >
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
+          <View>
+            <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>{today}</Text>
+            <Text style={{ color: '#fff', fontSize: fontSize.xxl, fontWeight: '800', letterSpacing: -0.5, marginTop: 2 }}>
+              {greeting()},{'\n'}{user?.name?.split(' ')[0] ?? 'Athlete'} 👋
             </Text>
           </View>
-        ))}
-      </View>
-    </ScrollView>
+          <View style={{
+            width: 48, height: 48, borderRadius: 999,
+            backgroundColor: colors.primary,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Text style={{ color: '#0a0a0a', fontWeight: '900', fontSize: fontSize.md }}>{initials}</Text>
+          </View>
+        </View>
+
+        {/* Calorie ring + macro bars */}
+        <View style={{
+          backgroundColor: colors.bgCard, borderRadius: radius.lg,
+          borderWidth: 1, borderColor: colors.border,
+          padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 20,
+          marginBottom: spacing.sm,
+        }}>
+          <CalorieRing eaten={eaten} target={target} />
+          <View style={{ flex: 1, gap: 14 }}>
+            <MacroBar label="Protein" eaten={0} target={user?.targetProtein ?? 140} color={colors.protein} />
+            <MacroBar label="Carbs"   eaten={0} target={user?.targetCarbs ?? 220}  color={colors.carbs} />
+            <MacroBar label="Fat"     eaten={0} target={user?.targetFat ?? 70}     color={colors.fat} />
+          </View>
+        </View>
+
+        {/* Quick actions 2×2 */}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: spacing.sm }}>
+          {quickActions.map((a) => (
+            <TouchableOpacity
+              key={a.label}
+              onPress={a.onPress}
+              style={{
+                width: '47.5%',
+                backgroundColor: a.primary ? colors.primary : colors.bgCard,
+                borderRadius: radius.md,
+                borderWidth: a.primary ? 0 : 1,
+                borderColor: colors.border,
+                padding: 16,
+                gap: 6,
+              }}
+            >
+              <Text style={{ fontSize: 22 }}>{a.emoji}</Text>
+              <Text style={{ color: a.primary ? '#0a0a0a' : '#fff', fontWeight: '800', fontSize: fontSize.sm }}>
+                {a.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Streak + Water */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{
+            flex: 1, backgroundColor: colors.bgCard, borderRadius: radius.md,
+            borderWidth: 1, borderColor: colors.border, padding: spacing.md, gap: 4,
+          }}>
+            <Text style={{ fontSize: 22 }}>🔥</Text>
+            <Text style={{ color: '#fff', fontSize: 28, fontWeight: '800', marginTop: 2 }}>
+              0 <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary, fontWeight: '500' }}>days</Text>
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>Logging streak</Text>
+          </View>
+          <View style={{
+            flex: 1, backgroundColor: colors.bgCard, borderRadius: radius.md,
+            borderWidth: 1, borderColor: colors.border, padding: spacing.md, gap: 4,
+          }}>
+            <Text style={{ fontSize: 22 }}>💧</Text>
+            <Text style={{ color: '#fff', fontSize: 28, fontWeight: '800', marginTop: 2 }}>
+              0<Text style={{ color: colors.textSecondary, fontWeight: '500', fontSize: fontSize.lg }}>/8</Text>
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>Glasses of water</Text>
+          </View>
+        </View>
+      </ScrollView>
+
+      <LogFoodSheet
+        visible={logSheetVisible}
+        date={dateStr}
+        onClose={() => setLogSheetVisible(false)}
+        onLogged={() => setLogSheetVisible(false)}
+      />
+    </View>
   )
 }
