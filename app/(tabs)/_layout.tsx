@@ -1,7 +1,28 @@
 import { Tabs } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors } from '@/constants/theme'
 
+type IoniconName = React.ComponentProps<typeof Ionicons>['name']
+
+interface TabConfig {
+  name: string
+  title: string
+  icon: IoniconName
+  iconFocused: IoniconName
+}
+
+const TABS: TabConfig[] = [
+  { name: 'index',     title: 'Home',      icon: 'home-outline',      iconFocused: 'home' },
+  { name: 'nutrition', title: 'Nutrition', icon: 'restaurant-outline', iconFocused: 'restaurant' },
+  { name: 'workout',   title: 'Workout',   icon: 'barbell-outline',    iconFocused: 'barbell' },
+  { name: 'progress',  title: 'Progress',  icon: 'bar-chart-outline',  iconFocused: 'bar-chart' },
+  { name: 'profile',   title: 'Profile',   icon: 'person-outline',     iconFocused: 'person' },
+]
+
 export default function TabLayout() {
+  const insets = useSafeAreaInsets()
+
   return (
     <Tabs
       screenOptions={{
@@ -10,72 +31,35 @@ export default function TabLayout() {
           backgroundColor: colors.bg,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          paddingBottom: 8,
           paddingTop: 8,
-          height: 60,
+          paddingBottom: insets.bottom + 4,
+          height: 56 + insets.bottom,
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          marginTop: 2,
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="📊" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="workout"
-        options={{
-          title: 'Workout',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="🏋️" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="nutrition"
-        options={{
-          title: 'Nutrition',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="🍎" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="progress"
-        options={{
-          title: 'Progress',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="📈" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="👤" color={color} />
-          ),
-        }}
-      />
+      {TABS.map(tab => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            tabBarIcon: ({ color, size, focused }) => (
+              <Ionicons
+                name={focused ? tab.iconFocused : tab.icon}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
-  )
-}
-
-function TabIcon({ emoji, color }: { emoji: string; color: string }) {
-  const { Text } = require('react-native')
-  return (
-    <Text style={{ fontSize: 22, opacity: color === colors.primary ? 1 : 0.5 }}>
-      {emoji}
-    </Text>
   )
 }

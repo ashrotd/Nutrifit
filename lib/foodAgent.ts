@@ -127,6 +127,48 @@ export async function fetchDayLogs(date: string): Promise<MealLog[]> {
   }))
 }
 
+export async function deleteFoodItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from('food_items').delete().eq('id', itemId)
+  if (error) throw error
+}
+
+export async function fetchStreak(): Promise<number> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+
+  const { data } = await supabase
+    .from('food_logs')
+    .select('date')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false })
+    .limit(400)
+
+  if (!data || data.length === 0) return 0
+
+  const uniqueDates = [...new Set(data.map(r => r.date as string))].sort().reverse()
+
+  const todayMs = new Date(new Date().toDateString()).getTime()
+  const MS_PER_DAY = 86400000
+
+  // Allow streak to start from today or yesterday (in case today isn't logged yet)
+  const firstDateMs = new Date(uniqueDates[0] + 'T00:00:00').getTime()
+  const gapFromToday = Math.round((todayMs - firstDateMs) / MS_PER_DAY)
+  if (gapFromToday > 1) return 0
+
+  let streak = 0
+  let expectedMs = firstDateMs
+  for (const dateStr of uniqueDates) {
+    const dateMs = new Date(dateStr + 'T00:00:00').getTime()
+    if (dateMs === expectedMs) {
+      streak++
+      expectedMs -= MS_PER_DAY
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
 export function sumNutrition(logs: MealLog[]) {
   const all = logs.flatMap(l => l.items)
   return {

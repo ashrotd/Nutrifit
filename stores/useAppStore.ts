@@ -9,6 +9,7 @@ interface AppState {
 
   // Actions
   setUser: (user: UserProfile | null) => void
+  updateUser: (updates: Partial<UserProfile>) => void
   setLoading: (loading: boolean) => void
   setOnboarded: (onboarded: boolean) => void
   reset: () => void
@@ -20,6 +21,7 @@ export const useAppStore = create<AppState>((set) => ({
   isOnboarded: false,
 
   setUser: (user) => set({ user }),
+  updateUser: (updates) => set(state => ({ user: state.user ? { ...state.user, ...updates } : null })),
   setLoading: (isLoading) => set({ isLoading }),
   setOnboarded: (isOnboarded) => set({ isOnboarded }),
   reset: () => set({ user: null, isLoading: false, isOnboarded: false }),

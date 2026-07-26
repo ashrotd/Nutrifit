@@ -29,44 +29,34 @@ export function calculateTDEE(
   return Math.round(bmr * multipliers[activityLevel])
 }
 
-// Calorie target based on goal
+// Calorie target based on goal — flat adjustments (same as onboarding)
 export function calculateTargetCalories(
   tdee: number,
   goal: Goal
 ): number {
   switch (goal) {
     case 'fat_loss':
-      return Math.round(tdee * 0.8)      // 20% deficit
+      return Math.max(Math.round(tdee - 500), 1200)
     case 'muscle_gain':
-      return Math.round(tdee * 1.1)      // 10% surplus
+      return Math.round(tdee + 300)
     case 'recomposition':
-      return Math.round(tdee)            // maintenance
-    case 'endurance':
-      return Math.round(tdee * 1.05)     // slight surplus
     case 'maintenance':
       return Math.round(tdee)
+    case 'endurance':
+      return Math.round(tdee + 200)
   }
 }
 
 
-// Macro targets in grams
+// Macro targets in grams — percentage split matching onboarding (30%P / 45%C / 25%F)
 export function calculateMacros(
   targetCalories: number,
-  weight: number, // kg
-  goal: Goal
+  _weight: number,
+  _goal: Goal
 ): { protein: number; carbs: number; fat: number } {
-  // Protein: 2g per kg for muscle gain, 1.8g for others
-  const proteinPerKg = goal === 'muscle_gain' ? 2.2 : 1.8
-  const protein = Math.round(weight * proteinPerKg)
-
-  // Fat: 25% of calories
-  const fat = Math.round((targetCalories * 0.25) / 9)
-
-  // Carbs: remaining calories
-  const proteinCalories = protein * 4
-  const fatCalories = fat * 9
-  const carbs = Math.round((targetCalories - proteinCalories - fatCalories) / 4)
-
+  const protein = Math.round((targetCalories * 0.30) / 4)
+  const carbs   = Math.round((targetCalories * 0.45) / 4)
+  const fat     = Math.round((targetCalories * 0.25) / 9)
   return { protein, carbs, fat }
 }
 

@@ -1,11 +1,12 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import { useState, useCallback } from 'react'
 import { format, addDays, isToday, isYesterday } from 'date-fns'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
 import { useAppStore } from '@/stores/useAppStore'
+import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, radius } from '@/constants/theme'
-import { fetchDayLogs, sumNutrition, MealLog, MealType } from '@/lib/foodAgent'
+import { fetchDayLogs, sumNutrition, deleteFoodItem, MealLog, MealType } from '@/lib/foodAgent'
 import LogFoodSheet from '@/components/nutrition/LogFoodSheet'
 
 const MEALS: { label: string; key: MealType }[] = [
@@ -28,6 +29,25 @@ export default function NutritionScreen() {
   const [mealLogs, setMealLogs] = useState<MealLog[]>([])
   const [loadingLogs, setLoadingLogs] = useState(false)
   const [activeMeal, setActiveMeal] = useState<MealType | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleDeleteItem = (itemId: string, itemName: string) => {
+    Alert.alert('Remove item', `Remove "${itemName}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove', style: 'destructive',
+        onPress: async () => {
+          setDeletingId(itemId)
+          try {
+            await deleteFoodItem(itemId)
+            await loadLogs()
+          } finally {
+            setDeletingId(null)
+          }
+        },
+      },
+    ])
+  }
 
   const dateStr = format(currentDate, 'yyyy-MM-dd')
   const dateLabel = formatDateLabel(currentDate)
@@ -134,19 +154,26 @@ export default function NutritionScreen() {
                 }} />
               </View>
 
-              <View style={{ flexDirection: 'row', gap: 16 }}>
+              <View style={{ flexDirection: 'row' }}>
                 {[
-                  { key: 'P', value: nutrition.protein, target: targetProtein, color: colors.protein },
-                  { key: 'C', value: nutrition.carbs, target: targetCarbs, color: colors.carbs },
-                  { key: 'F', value: nutrition.fat, target: targetFat, color: colors.fat },
-                ].map((m) => (
-                  <View key={m.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-                    <View style={{ width: 9, height: 9, borderRadius: 99, backgroundColor: m.color }} />
-                    <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>
-                      {m.key}{' '}
-                      <Text style={{ color: '#fff', fontWeight: '700' }}>{m.value}g</Text>
-                      <Text style={{ color: colors.textMuted }}> / {m.target}g</Text>
-                    </Text>
+                  { label: 'Protein', key: 'P', value: nutrition.protein, target: targetProtein, color: colors.protein },
+                  { label: 'Carbs',   key: 'C', value: nutrition.carbs,   target: targetCarbs,   color: colors.carbs },
+                  { label: 'Fat',     key: 'F', value: nutrition.fat,     target: targetFat,     color: colors.fat },
+                ].map((m, i) => (
+                  <View key={m.key} style={{
+                    flex: 1,
+                    paddingLeft: i === 0 ? 0 : 12,
+                    borderLeftWidth: i === 0 ? 0 : 1,
+                    borderLeftColor: colors.border,
+                    marginLeft: i === 0 ? 0 : 12,
+                    gap: 2,
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 99, backgroundColor: m.color }} />
+                      <Text style={{ color: colors.textSecondary, fontSize: fontSize.xs, fontWeight: '600' }}>{m.label}</Text>
+                    </View>
+                    <Text style={{ color: '#fff', fontSize: fontSize.md, fontWeight: '800' }}>{m.value}g</Text>
+                    <Text style={{ color: colors.textMuted, fontSize: fontSize.xs }}>of {m.target}g</Text>
                   </View>
                 ))}
               </View>
@@ -206,6 +233,7 @@ export default function NutritionScreen() {
                     borderBottomWidth: i < items.length - 1 ? 1 : 0,
                     borderBottomColor: colors.border,
                     gap: 12,
+                    opacity: deletingId === item.id ? 0.4 : 1,
                   }}>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: '#fff', fontSize: fontSize.sm, fontWeight: '600' }}>
@@ -218,6 +246,13 @@ export default function NutritionScreen() {
                     <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: '600' }}>
                       {Math.round(item.calories)} kcal
                     </Text>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteItem(item.id, item.name)}
+                      disabled={deletingId === item.id}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons name="trash-outline" size={16} color={colors.textMuted} />
+                    </TouchableOpacity>
                   </View>
                 ))
               )}
