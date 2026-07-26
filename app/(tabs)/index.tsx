@@ -121,7 +121,7 @@ export default function DashboardScreen() {
     { label: 'Log Food',     icon: 'nutrition-outline', primary: true,  onPress: () => setLogSheetVisible(true) },
     { label: 'Add Workout',  icon: 'barbell-outline',   primary: false, onPress: () => {} },
     { label: 'Log Weight',   icon: 'scale-outline',     primary: false, subtitle: latestWeight != null ? `${latestWeight} kg` : undefined, onPress: () => setWeightSheetVisible(true) },
-    { label: 'AI Coach',     icon: 'sparkles-outline',  primary: false, onPress: () => {} },
+    { label: 'AI Coach',     icon: 'sparkles-outline',  primary: false, subtitle: 'Coming soon', onPress: () => {} },
   ]
 
   return (

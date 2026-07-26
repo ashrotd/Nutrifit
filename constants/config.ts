@@ -9,7 +9,7 @@ export const config = {
   whisperBaseUrl: 'https://api.openai.com/v1/audio/transcriptions',
 
   // App settings
-  appName: 'NutriFit',
+  appName: 'NutriArc',
   version: '1.0.0',
 
   // Fitness defaults

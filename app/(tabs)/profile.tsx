@@ -13,12 +13,17 @@ export default function ProfileScreen() {
     ?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
 
   const weightKg = user?.weight ?? 0
-  const heightCm = user?.height ?? 0
+  const rawHeight = user?.height ?? 0
+  const heightCm = user?.heightUnit === 'ft' ? rawHeight * 30.48 : rawHeight
   const bmi = heightCm > 0 ? (weightKg / ((heightCm / 100) ** 2)).toFixed(1) : '--'
 
+  const heightDisplay = user?.heightUnit === 'ft'
+    ? `${Math.floor(rawHeight)}'${Math.round((rawHeight % 1) * 12)}"`
+    : `${rawHeight}`
+
   const stats = [
-    { label: 'Weight kg', value: weightKg.toString() },
-    { label: 'Height cm', value: heightCm.toString() },
+    { label: `Weight (${user?.weightUnit ?? 'kg'})`, value: weightKg.toString() },
+    { label: `Height (${user?.heightUnit ?? 'cm'})`, value: heightDisplay },
     { label: 'Age', value: (user?.age ?? '--').toString() },
     { label: 'BMI', value: bmi.toString() },
   ]
@@ -51,7 +56,7 @@ export default function ProfileScreen() {
         </View>
         <View style={{ alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontSize: fontSize.xl, fontWeight: '800' }}>{user?.name ?? 'Athlete'}</Text>
-          <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>NutriFit member</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm }}>NutriArc member</Text>
         </View>
       </View>
 

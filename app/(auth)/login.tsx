@@ -63,7 +63,7 @@ export default function LoginScreen() {
             color: colors.textPrimary,
             letterSpacing: -1,
           }}>
-            NutriFit
+            NutriArc
           </Text>
           <Text style={{
             fontSize: fontSize.md,

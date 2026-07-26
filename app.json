@@ -1,24 +1,26 @@
 {
   "expo": {
-    "name": "Nutrifit",
-    "slug": "Nutrifit",
+    "name": "NutriArc",
+    "slug": "nutriarc",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
+      "bundleIdentifier": "com.nutriarc.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.nutriarc.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0a0a0a"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -27,8 +29,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "NutriArc needs access to your photos to scan food.",
+          "cameraPermission": "NutriArc needs camera access to scan food."
+        }
+      ]
     ],
-    "scheme": "nutrifit"
+    "scheme": "nutriarc"
   }
 }
