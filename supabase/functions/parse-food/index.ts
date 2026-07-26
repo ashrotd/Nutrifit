@@ -1,3 +1,5 @@
+import { verifyAndRateLimit } from '../_shared/rateLimit.ts'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,6 +20,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  const authResult = await verifyAndRateLimit(req, 'parse-food')
+  if (authResult instanceof Response) return authResult
 
   try {
     const { rawInput } = await req.json()
