@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { router } from 'expo-router'
 import { useAuth } from '@/hooks/useAuth'
 import { colors, spacing, fontSize, radius } from '@/constants/theme'
+import NutriArcLogo from '@/components/NutriArcLogo'
 
 export default function LoginScreen() {
   const { signIn } = useAuth()
@@ -51,17 +52,13 @@ export default function LoginScreen() {
       >
         {/* Logo / Header */}
         <View style={{ alignItems: 'center', marginBottom: spacing.xxl }}>
-          <Text style={{
-            fontSize: 48,
-            marginBottom: spacing.sm,
-          }}>
-            💪
-          </Text>
+          <NutriArcLogo size={88} />
           <Text style={{
             fontSize: fontSize.xxxl,
             fontWeight: '800',
             color: colors.textPrimary,
             letterSpacing: -1,
+            marginTop: spacing.sm,
           }}>
             NutriArc
           </Text>
