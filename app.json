@@ -16,7 +16,10 @@
     "ios": {
       "bundleIdentifier": "com.nutriarc.app",
       "buildNumber": "1",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.nutriarc.app",
@@ -27,7 +30,9 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "usesCleartextTraffic": true
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -42,6 +47,13 @@
           "cameraPermission": "NutriArc needs camera access to scan food."
         }
       ]
-    ]
+    ],
+    "scheme": "nutriarc",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1f36f330-6034-4572-9d00-379f994edc6b"
+      }
+    }
   }
 }
