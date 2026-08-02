@@ -3,39 +3,48 @@ import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/useAppStore'
 import { UserProfile } from '@/types'
 
-// module-level flag — subscription only runs once across all useAuth() calls
-let subscribed = false
+// module-level singleton — the listener is created once for the app's
+// lifetime and only torn down when the last useAuth() consumer unmounts,
+// so screens mounting/unmounting (login, register, tabs, ...) don't
+// repeatedly recreate the subscription and refire INITIAL_SESSION.
+let authListenerCount = 0
+let authSubscription: { unsubscribe: () => void } | null = null
 
 export function useAuth() {
   const { user, isLoading, setUser, setLoading, setOnboarded, reset } =
     useAppStore()
 
   useEffect(() => {
-    if (subscribed) return
-    subscribed = true
+    authListenerCount++
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('authStateChange event:', event, session?.user?.email)
+    if (authListenerCount === 1) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
-          await fetchProfile(session.user.id)
+          fetchProfile(session.user.id)
         } else {
-          reset()
+          setLoading(false)
         }
-      }
-    )
+      })
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log('authStateChange event:', event, session?.user?.email)
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+          } else {
+            reset()
+          }
+        }
+      )
+      authSubscription = subscription
+    }
 
     return () => {
-      subscription.unsubscribe()
-      subscribed = false
+      authListenerCount--
+      if (authListenerCount === 0 && authSubscription) {
+        authSubscription.unsubscribe()
+        authSubscription = null
+      }
     }
   }, [])
 
@@ -98,6 +107,11 @@ export function useAuth() {
     if (error) throw error
   }
 
+  async function resendConfirmation(email: string) {
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) throw error
+  }
+
   return {
     user,
     isLoading,
@@ -105,6 +119,7 @@ export function useAuth() {
     signIn,
     signOut,
     resetPassword,
+    resendConfirmation,
     isAuthenticated: !!user,
   }
 }
