@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useState, useCallback } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { format } from 'date-fns'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Circle, Text as SvgText } from 'react-native-svg'
@@ -68,6 +68,7 @@ function MacroBar({ label, eaten, target, color }: { label: string; eaten: numbe
 export default function DashboardScreen() {
   const { user } = useAppStore()
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const [logSheetVisible, setLogSheetVisible] = useState(false)
   const [mealLogs, setMealLogs] = useState<MealLog[]>([])
   const [waterGlasses, setWaterGlasses] = useState(0)
@@ -118,10 +119,10 @@ export default function DashboardScreen() {
     primary: boolean
     onPress: () => void
   }[] = [
-    { label: 'Log Food',     icon: 'nutrition-outline', primary: true,  onPress: () => setLogSheetVisible(true) },
-    { label: 'Add Workout',  icon: 'barbell-outline',   primary: false, onPress: () => {} },
-    { label: 'Log Weight',   icon: 'scale-outline',     primary: false, subtitle: latestWeight != null ? `${latestWeight} kg` : undefined, onPress: () => setWeightSheetVisible(true) },
-    { label: 'AI Coach',     icon: 'sparkles-outline',  primary: false, subtitle: 'Coming soon', onPress: () => {} },
+    { label: 'Log Food',  icon: 'nutrition-outline', primary: true,  onPress: () => setLogSheetVisible(true) },
+    { label: 'Workout',   icon: 'barbell-outline',   primary: false, onPress: () => router.push('/(tabs)/workout') },
+    { label: 'Log Weight', icon: 'scale-outline',    primary: false, subtitle: latestWeight != null ? `${latestWeight} kg` : undefined, onPress: () => setWeightSheetVisible(true) },
+    { label: 'AI Coach',  icon: 'sparkles-outline',  primary: false, subtitle: 'Coming soon', onPress: () => {} },
   ]
 
   return (

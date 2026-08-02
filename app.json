@@ -15,7 +15,10 @@
     "ios": {
       "bundleIdentifier": "com.nutriarc.app",
       "buildNumber": "1",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.nutriarc.app",
@@ -25,7 +28,10 @@
         "backgroundColor": "#0a0a0a"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,6 +46,12 @@
         }
       ]
     ],
-    "scheme": "nutriarc"
+    "scheme": "nutriarc",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1f36f330-6034-4572-9d00-379f994edc6b"
+      }
+    }
   }
 }
