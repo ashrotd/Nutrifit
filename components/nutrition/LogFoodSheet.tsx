@@ -389,7 +389,7 @@ export default function LogFoodSheet({ visible, initialMealType, date, onClose, 
                     Analyzing your meal...
                   </Text>
                   <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' }}>
-                    Claude is identifying food items{'\n'}and calculating nutrition
+                    Identifying food items{'\n'}and calculating nutrition
                   </Text>
                 </View>
               )}
