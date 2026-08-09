@@ -36,6 +36,12 @@ export interface UserProfile {
   bmr: number
   tdee: number
   createdAt: string
+  // Reminder settings
+  remindersEnabled?: boolean
+  breakfastTime?: string   // "HH:MM" 24h
+  lunchTime?: string
+  dinnerTime?: string
+  eveningNudge?: boolean
 }
 
 export interface metrics {
